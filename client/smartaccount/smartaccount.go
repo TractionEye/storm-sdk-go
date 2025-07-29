@@ -7,6 +7,7 @@ import (
 	"github.com/xssnick/tonutils-go/address"
 	"github.com/xssnick/tonutils-go/tlb"
 	"github.com/xssnick/tonutils-go/ton"
+	"github.com/xssnick/tonutils-go/ton/jetton"
 	"github.com/xssnick/tonutils-go/ton/wallet"
 	"github.com/xssnick/tonutils-go/tvm/cell"
 	"time"
@@ -55,7 +56,7 @@ func (c *Client) GetStorageData(ctx context.Context) (*smartaccount.AccountData,
 }
 
 func (c *Client) DepositNative(from *wallet.Wallet, owner, vault *address.Address, amount *tlb.Coins, init bool, publicKeys ...smartaccount.PublicKey) (*tlb.Transaction, error) {
-	payload, err := c.BuildDepositPayload(owner, amount, init, publicKeys...)
+	payload, err := c.BuildDepositNativePayload(owner, amount, init, publicKeys...)
 	if err != nil {
 		return nil, err
 	}
@@ -71,10 +72,59 @@ func (c *Client) DepositNative(from *wallet.Wallet, owner, vault *address.Addres
 	return tx, err
 }
 
-func (c *Client) BuildDepositPayload(owner *address.Address, amount *tlb.Coins, init bool, publicKeys ...smartaccount.PublicKey) (*cell.Cell, error) {
+func (c *Client) DepositJetton(from *wallet.Wallet, owner, vault, jettonMaster *address.Address, amount *tlb.Coins, init bool, publicKeys ...smartaccount.PublicKey) (*tlb.Transaction, error) {
+	jettonMasterClient := jetton.NewJettonMasterClient(c.API, jettonMaster)
+	jettonWallet, err := jettonMasterClient.GetJettonWallet(context.Background(), from.WalletAddress())
+	if err != nil {
+		return nil, err
+	}
+
+	payload, err := c.BuildDepositJettonPayload(owner, amount, init, publicKeys...)
+	if err != nil {
+		return nil, err
+	}
+
+	transferPayload, err := jetton.BuildTransferPayload(vault, from.WalletAddress(), *amount, tlb.MustFromTON("0.15"), payload, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	msg := wallet.SimpleMessage(jettonWallet.Address(), tlb.MustFromTON("0.3"), transferPayload)
+	tx, _, err := from.SendWaitTransaction(context.Background(), msg)
+
+	return tx, err
+}
+
+func (c *Client) BuildDepositJettonPayload(owner *address.Address, amount *tlb.Coins, init bool, publicKeys ...smartaccount.PublicKey) (*cell.Cell, error) {
 	queryId := uint64(time.Now().Unix())
 
-	v := &smartaccount.DepositMessagePayload{
+	v := &smartaccount.DepositJettonPayload{
+		QueryID:         queryId,
+		ReceiverAddress: owner,
+		Init:            init,
+		KeyInit:         nil,
+	}
+
+	if len(publicKeys) > 0 {
+		pks := smartaccount.UserPublicKeys{
+			Values: publicKeys,
+		}
+
+		dict, err := pks.ToDictionary()
+		if err != nil {
+			return nil, err
+		}
+
+		v.KeyInit = dict
+	}
+
+	return tlb.ToCell(v)
+}
+
+func (c *Client) BuildDepositNativePayload(owner *address.Address, amount *tlb.Coins, init bool, publicKeys ...smartaccount.PublicKey) (*cell.Cell, error) {
+	queryId := uint64(time.Now().Unix())
+
+	v := &smartaccount.DepositNativePayload{
 		QueryID:         queryId,
 		Amount:          amount,
 		ReceiverAddress: owner,
