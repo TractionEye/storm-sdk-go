@@ -79,7 +79,7 @@ func (c *Client) DepositJetton(from *wallet.Wallet, owner, vault, jettonMaster *
 		return nil, err
 	}
 
-	payload, err := c.BuildDepositJettonPayload(owner, amount, init, publicKeys...)
+	payload, err := c.BuildDepositJettonPayload(owner, init, publicKeys...)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,76 @@ func (c *Client) DepositJetton(from *wallet.Wallet, owner, vault, jettonMaster *
 	return tx, err
 }
 
-func (c *Client) BuildDepositJettonPayload(owner *address.Address, amount *tlb.Coins, init bool, publicKeys ...smartaccount.PublicKey) (*cell.Cell, error) {
+func (c *Client) AddPublicKey(from *wallet.Wallet, publicKey smartaccount.PublicKey) (*tlb.Transaction, error) {
+	payload := smartaccount.AddPublicKeyPayload{
+		QueryID:   uint64(time.Now().Unix()),
+		PublicKey: publicKey,
+	}
+
+	payloadCell, err := tlb.ToCell(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	msg := wallet.SimpleMessage(c.addr, MinGas, payloadCell)
+	tx, _, err := from.SendWaitTransaction(context.Background(), msg)
+
+	return tx, err
+}
+
+func (c *Client) RemovePublicKey(from *wallet.Wallet, publicKey smartaccount.PublicKey) (*tlb.Transaction, error) {
+	payload := smartaccount.RemovePublicKeyPayload{
+		QueryID:   uint64(time.Now().Unix()),
+		PublicKey: publicKey,
+	}
+
+	payloadCell, err := tlb.ToCell(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	msg := wallet.SimpleMessage(c.addr, MinGas, payloadCell)
+	tx, _, err := from.SendWaitTransaction(context.Background(), msg)
+
+	return tx, err
+}
+
+func (c *Client) RemoveAllExceptCurrentPublicKey(from *wallet.Wallet, publicKey smartaccount.PublicKey) (*tlb.Transaction, error) {
+	payload := smartaccount.RemoveAllExceptCurrentPublicKeyPayload{
+		QueryID:   uint64(time.Now().Unix()),
+		PublicKey: publicKey,
+	}
+
+	payloadCell, err := tlb.ToCell(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	msg := wallet.SimpleMessage(c.addr, MinGas, payloadCell)
+	tx, _, err := from.SendWaitTransaction(context.Background(), msg)
+
+	return tx, err
+}
+
+func (c *Client) Withdraw(from *wallet.Wallet, vault *address.Address, amount *tlb.Coins) (*tlb.Transaction, error) {
+	payload := smartaccount.WithdrawPayload{
+		QueryID:      uint64(time.Now().Unix()),
+		VaultAddress: vault,
+		Amount:       amount,
+	}
+
+	payloadCell, err := tlb.ToCell(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	msg := wallet.SimpleMessage(c.addr, tlb.MustFromTON("0.1"), payloadCell)
+	tx, _, err := from.SendWaitTransaction(context.Background(), msg)
+
+	return tx, err
+}
+
+func (c *Client) BuildDepositJettonPayload(owner *address.Address, init bool, publicKeys ...smartaccount.PublicKey) (*cell.Cell, error) {
 	queryId := uint64(time.Now().Unix())
 
 	v := &smartaccount.DepositJettonPayload{
