@@ -15,5 +15,6 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sigurn/crc16 v0.0.0-20211026045750-20ab5afb07e3 // indirect
+	golang.org/x/crypto v0.39.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

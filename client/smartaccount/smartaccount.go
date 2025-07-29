@@ -7,6 +7,13 @@ import (
 	"github.com/xssnick/tonutils-go/address"
 	"github.com/xssnick/tonutils-go/tlb"
 	"github.com/xssnick/tonutils-go/ton"
+	"github.com/xssnick/tonutils-go/ton/wallet"
+	"github.com/xssnick/tonutils-go/tvm/cell"
+	"time"
+)
+
+var (
+	MinGas = tlb.MustFromTON("0.05")
 )
 
 type Client struct {
@@ -45,4 +52,35 @@ func (c *Client) GetStorageData(ctx context.Context) (*smartaccount.AccountData,
 	}
 
 	return data, nil
+}
+
+func (c *Client) DepositNative(from *wallet.Wallet, to *address.Address, amount *tlb.Coins) (*tlb.Transaction, error) {
+	payload, err := c.BuildDepositNativePayload(from.WalletAddress(), amount)
+	if err != nil {
+		return nil, err
+	}
+
+	tonAmount, err := amount.Add(&MinGas)
+	if err != nil {
+		return nil, err
+	}
+
+	msg := wallet.SimpleMessage(to, *tonAmount, payload)
+	tx, _, err := from.SendWaitTransaction(context.Background(), msg)
+
+	return tx, err
+}
+
+func (c *Client) BuildDepositNativePayload(owner *address.Address, amount *tlb.Coins) (*cell.Cell, error) {
+	queryId := uint64(time.Now().Unix())
+
+	v := &smartaccount.DepositNative{
+		QueryID:         queryId,
+		Amount:          amount,
+		ReceiverAddress: owner,
+		Init:            false,
+		KeyInit:         nil,
+	}
+
+	return tlb.ToCell(v)
 }
