@@ -1,4 +1,4 @@
-package schemas_test
+package tlb_test
 
 import (
 	"fmt"

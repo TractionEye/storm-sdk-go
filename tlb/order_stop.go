@@ -1,4 +1,4 @@
-package schemas
+package tlb
 
 import "github.com/xssnick/tonutils-go/tlb"
 
