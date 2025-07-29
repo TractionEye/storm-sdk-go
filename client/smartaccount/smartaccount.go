@@ -54,8 +54,8 @@ func (c *Client) GetStorageData(ctx context.Context) (*smartaccount.AccountData,
 	return data, nil
 }
 
-func (c *Client) DepositNative(from *wallet.Wallet, to *address.Address, amount *tlb.Coins) (*tlb.Transaction, error) {
-	payload, err := c.BuildDepositNativePayload(from.WalletAddress(), amount)
+func (c *Client) DepositNative(from *wallet.Wallet, owner, vault *address.Address, amount *tlb.Coins, init bool, publicKeys ...smartaccount.PublicKey) (*tlb.Transaction, error) {
+	payload, err := c.BuildDepositPayload(owner, amount, init, publicKeys...)
 	if err != nil {
 		return nil, err
 	}
@@ -65,21 +65,34 @@ func (c *Client) DepositNative(from *wallet.Wallet, to *address.Address, amount 
 		return nil, err
 	}
 
-	msg := wallet.SimpleMessage(to, *tonAmount, payload)
+	msg := wallet.SimpleMessage(vault, *tonAmount, payload)
 	tx, _, err := from.SendWaitTransaction(context.Background(), msg)
 
 	return tx, err
 }
 
-func (c *Client) BuildDepositNativePayload(owner *address.Address, amount *tlb.Coins) (*cell.Cell, error) {
+func (c *Client) BuildDepositPayload(owner *address.Address, amount *tlb.Coins, init bool, publicKeys ...smartaccount.PublicKey) (*cell.Cell, error) {
 	queryId := uint64(time.Now().Unix())
 
-	v := &smartaccount.DepositNative{
+	v := &smartaccount.DepositMessagePayload{
 		QueryID:         queryId,
 		Amount:          amount,
 		ReceiverAddress: owner,
-		Init:            false,
+		Init:            init,
 		KeyInit:         nil,
+	}
+
+	if len(publicKeys) > 0 {
+		pks := smartaccount.UserPublicKeys{
+			Values: publicKeys,
+		}
+
+		dict, err := pks.ToDictionary()
+		if err != nil {
+			return nil, err
+		}
+
+		v.KeyInit = dict
 	}
 
 	return tlb.ToCell(v)

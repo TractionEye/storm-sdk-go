@@ -72,6 +72,15 @@ func (m *UserPublicKeys) LoadFromCell(slice *cell.Slice) error {
 }
 
 func (m *UserPublicKeys) ToCell() (*cell.Cell, error) {
+	dict, err := m.ToDictionary()
+	if err != nil {
+		return nil, err
+	}
+
+	return cell.BeginCell().MustStoreDict(dict).EndCell(), nil
+}
+
+func (m *UserPublicKeys) ToDictionary() (*cell.Dictionary, error) {
 	dict := cell.NewDict(256)
 
 	for _, item := range m.Values {
@@ -83,7 +92,7 @@ func (m *UserPublicKeys) ToCell() (*cell.Cell, error) {
 		}
 	}
 
-	return cell.BeginCell().MustStoreDict(dict).EndCell(), nil
+	return dict, nil
 }
 
 type BalanceList struct {

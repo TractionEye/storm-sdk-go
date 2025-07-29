@@ -6,7 +6,7 @@ import (
 	"github.com/xssnick/tonutils-go/tvm/cell"
 )
 
-type DepositNative struct {
+type DepositMessagePayload struct {
 	_               tlb.Magic        `tlb:"#29bb3721" json:"_"`
 	QueryID         uint64           `tlb:"## 64" json:"query_id"`
 	Amount          *tlb.Coins       `tlb:"." json:"amount"`
