@@ -1,4 +1,4 @@
-module github.com/TractionEye/sdk-go
+module github.com/TractionEye/storm-sdk-go
 
 go 1.24.1
 
