@@ -1,4 +1,4 @@
-module github.com/storm-trade/sdk-go
+module github.com/TractionEye/sdk-go
 
 go 1.24.1
 
