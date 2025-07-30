@@ -3,7 +3,7 @@ package smartaccount
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	schemas "github.com/TractionEye/sdk-go/tlb"
+	schemas "github.com/TractionEye/storm-sdk-go/tlb"
 	"github.com/xssnick/tonutils-go/address"
 	"github.com/xssnick/tonutils-go/tlb"
 	"github.com/xssnick/tonutils-go/tvm/cell"

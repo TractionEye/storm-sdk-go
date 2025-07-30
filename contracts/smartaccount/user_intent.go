@@ -2,8 +2,8 @@ package smartaccount
 
 import (
 	"encoding/hex"
-	"github.com/TractionEye/sdk-go/contracts/hw"
-	schemas "github.com/TractionEye/sdk-go/tlb"
+	"github.com/TractionEye/storm-sdk-go/contracts/hw"
+	schemas "github.com/TractionEye/storm-sdk-go/tlb"
 
 	"github.com/xssnick/tonutils-go/address"
 	"github.com/xssnick/tonutils-go/tlb"
