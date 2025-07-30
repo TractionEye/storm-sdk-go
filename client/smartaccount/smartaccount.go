@@ -3,7 +3,7 @@ package smartaccount
 import (
 	"context"
 	"github.com/pkg/errors"
-	"github.com/storm-trade/sdk-go/contracts/smartaccount"
+	"github.com/TractionEye/sdk-go/contracts/smartaccount"
 	"github.com/xssnick/tonutils-go/address"
 	"github.com/xssnick/tonutils-go/tlb"
 	"github.com/xssnick/tonutils-go/ton"

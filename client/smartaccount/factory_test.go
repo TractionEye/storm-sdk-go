@@ -3,7 +3,7 @@ package smartaccount_test
 import (
 	"context"
 	"github.com/pkg/errors"
-	"github.com/storm-trade/sdk-go/client/smartaccount"
+	"github.com/TractionEye/sdk-go/client/smartaccount"
 	"github.com/stretchr/testify/require"
 	"github.com/xssnick/tonutils-go/address"
 	"github.com/xssnick/tonutils-go/liteclient"

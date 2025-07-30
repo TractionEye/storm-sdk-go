@@ -1,7 +1,7 @@
 package smartaccount_test
 
 import (
-	"github.com/storm-trade/sdk-go/contracts/smartaccount"
+	"github.com/TractionEye/sdk-go/contracts/smartaccount"
 	"github.com/stretchr/testify/require"
 	"github.com/xssnick/tonutils-go/tlb"
 	"testing"
