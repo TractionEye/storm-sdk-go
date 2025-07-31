@@ -2,11 +2,16 @@ package smartaccount
 
 import (
 	"crypto/ed25519"
+	"crypto/hmac"
+	"crypto/sha512"
 	"encoding/json"
+	"math/big"
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/xssnick/tonutils-go/address"
 	"github.com/xssnick/tonutils-go/tvm/cell"
-	"math/big"
+	"golang.org/x/crypto/pbkdf2"
 )
 
 type AccountData struct {
@@ -39,6 +44,18 @@ type UserPublicKeys struct {
 }
 
 type PublicKey ed25519.PublicKey
+
+func (m *UserPublicKeys) ExtractFromSeed(mnemonic []string) error {
+	mac := hmac.New(sha512.New, []byte(strings.Join(mnemonic, " ")))
+	hash := mac.Sum(nil)
+	k := pbkdf2.Key(hash, []byte("TON default seed"), 100000, 32, sha512.New)
+
+	privateKey := ed25519.NewKeyFromSeed(k)
+	publicKey := privateKey.Public().(ed25519.PublicKey)
+	m.Values = make([]PublicKey, 1)
+	m.Values = append(m.Values, PublicKey(publicKey))
+	return nil
+}
 
 func (m *UserPublicKeys) LoadFromCell(slice *cell.Slice) error {
 	deviceDict, err := slice.LoadDict(256)
@@ -86,7 +103,6 @@ func (m *UserPublicKeys) ToDictionary() (*cell.Dictionary, error) {
 	for _, item := range m.Values {
 		key := cell.BeginCell().MustStoreBigInt(new(big.Int).SetBytes(item), 256).EndCell()
 		err := dict.Set(key, cell.BeginCell().EndCell())
-
 		if err != nil {
 			return nil, err
 		}

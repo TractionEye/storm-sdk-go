@@ -6,6 +6,12 @@ import (
 	"github.com/xssnick/tonutils-go/tvm/cell"
 )
 
+type DeployOrdinarySA struct {
+	_          tlb.Magic        `tlb:"#764019e5" json:"_"`
+	QueryID    uint64           `tlb:"## 64" json:"query_id"`
+	PublicKeys *cell.Dictionary `tlb:"dict 256" json:"key_init"`
+}
+
 type DepositNativePayload struct {
 	_               tlb.Magic        `tlb:"#29bb3721" json:"_"`
 	QueryID         uint64           `tlb:"## 64" json:"query_id"`

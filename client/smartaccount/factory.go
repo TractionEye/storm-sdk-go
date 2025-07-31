@@ -2,10 +2,15 @@ package smartaccount
 
 import (
 	"context"
+	"math/big"
+	"time"
+
+	"github.com/TractionEye/storm-sdk-go/contracts/smartaccount"
 	"github.com/pkg/errors"
 	"github.com/xssnick/tonutils-go/address"
+	"github.com/xssnick/tonutils-go/tlb"
 	"github.com/xssnick/tonutils-go/ton"
-	"math/big"
+	"github.com/xssnick/tonutils-go/ton/wallet"
 )
 
 type Factory struct {
@@ -48,3 +53,36 @@ func (f *Factory) GetSmartAccount(ctx context.Context, owner *address.Address) (
 
 	return NewClient(f.API, addr), nil
 }
+
+func (f *Factory) DeploySmartAccount(ctx context.Context, mnemonic []string) (*tlb.Transaction, error) {
+	queryId := uint64(time.Now().Unix())
+	v := &smartaccount.DeployOrdinarySA{
+		QueryID:    queryId,
+		PublicKeys: nil,
+	}
+	pks := smartaccount.UserPublicKeys{}
+	pks.ExtractFromSeed(mnemonic)
+
+	dict, err := pks.ToDictionary()
+	if err != nil {
+		return nil, err
+	}
+
+	v.PublicKeys = dict
+
+	payload, err := tlb.ToCell(v)
+	if err != nil {
+		return nil, err
+	}
+
+	walletInstance, err := wallet.FromSeed(f.API, mnemonic, wallet.V4R2)
+	if err != nil {
+		return nil, err
+	}
+	msg := wallet.SimpleMessage(f.Addr, tlb.MustFromTON("0.1"), payload)
+	tx, _, err := walletInstance.SendWaitTransaction(context.Background(), msg)
+
+	return tx, err
+}
+
+
