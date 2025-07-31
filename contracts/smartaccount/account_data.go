@@ -5,7 +5,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha512"
 	"encoding/json"
-	"math/big"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -52,7 +51,7 @@ func (m *UserPublicKeys) ExtractFromSeed(mnemonic []string) error {
 
 	privateKey := ed25519.NewKeyFromSeed(k)
 	publicKey := privateKey.Public().(ed25519.PublicKey)
-	m.Values = make([]PublicKey, 1)
+	m.Values = make([]PublicKey, 0, 10)
 	m.Values = append(m.Values, PublicKey(publicKey))
 	return nil
 }
@@ -101,8 +100,8 @@ func (m *UserPublicKeys) ToDictionary() (*cell.Dictionary, error) {
 	dict := cell.NewDict(256)
 
 	for _, item := range m.Values {
-		key := cell.BeginCell().MustStoreBigInt(new(big.Int).SetBytes(item), 256).EndCell()
-		err := dict.Set(key, cell.BeginCell().EndCell())
+		key := cell.BeginCell().MustStoreUInt(0, 256).EndCell()
+		err := dict.Set(key, cell.BeginCell().MustStoreSlice(item, 256).EndCell())
 		if err != nil {
 			return nil, err
 		}

@@ -11,6 +11,7 @@ import (
 	"github.com/xssnick/tonutils-go/tlb"
 	"github.com/xssnick/tonutils-go/ton"
 	"github.com/xssnick/tonutils-go/ton/wallet"
+	"github.com/xssnick/tonutils-go/tvm/cell"
 )
 
 type Factory struct {
@@ -56,33 +57,23 @@ func (f *Factory) GetSmartAccount(ctx context.Context, owner *address.Address) (
 
 func (f *Factory) DeploySmartAccount(ctx context.Context, mnemonic []string) (*tlb.Transaction, error) {
 	queryId := uint64(time.Now().Unix())
-	v := &smartaccount.DeployOrdinarySA{
-		QueryID:    queryId,
-		PublicKeys: nil,
-	}
 	pks := smartaccount.UserPublicKeys{}
 	pks.ExtractFromSeed(mnemonic)
+	builder := cell.BeginCell()
 
-	dict, err := pks.ToDictionary()
-	if err != nil {
-		return nil, err
-	}
+	builder.MustStoreUInt(0x764019e5, 32)
+	builder.MustStoreUInt(queryId, 64)
+	dict := cell.NewDict(256)
+	dict.Set(cell.BeginCell().MustStoreUInt(0, 256).EndCell(), cell.BeginCell().MustStoreSlice(pks.Values[0], 256).EndCell())
+	builder.MustStoreDict(dict)
 
-	v.PublicKeys = dict
-
-	payload, err := tlb.ToCell(v)
-	if err != nil {
-		return nil, err
-	}
-
+	payload := builder.EndCell()
 	walletInstance, err := wallet.FromSeed(f.API, mnemonic, wallet.V4R2)
 	if err != nil {
 		return nil, err
 	}
-	msg := wallet.SimpleMessage(f.Addr, tlb.MustFromTON("0.2"), payload)
+	msg := wallet.SimpleMessage(f.Addr, tlb.MustFromTON("0.5"), payload)
 	tx, _, err := walletInstance.SendWaitTransaction(context.Background(), msg)
 
 	return tx, err
 }
-
-

@@ -9,7 +9,7 @@ import (
 type DeployOrdinarySA struct {
 	_          tlb.Magic        `tlb:"#764019e5" json:"_"`
 	QueryID    uint64           `tlb:"## 64" json:"query_id"`
-	PublicKeys *cell.Dictionary `tlb:"dict 256" json:"key_init"`
+	PublicKeys *cell.Dictionary `tlb:"maybe dict 256" json:"public_keys"`
 }
 
 type DepositNativePayload struct {
