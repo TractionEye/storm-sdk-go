@@ -2,7 +2,11 @@ package smartaccount
 
 import (
 	"crypto/ed25519"
+	"encoding/hex"
+
+	"github.com/xssnick/tonutils-go/address"
 	"github.com/xssnick/tonutils-go/tlb"
+	"github.com/xssnick/tonutils-go/tvm/cell"
 )
 
 type SignedMessage struct {
@@ -13,6 +17,28 @@ type SignedMessage struct {
 
 func (msg *SignedMessage) Hash() (string, error) {
 	return msg.Message.Hash()
+}
+
+func (msg *SignedMessage) Marshal(saAddr *address.Address) (string, error) {
+
+	userIntentCell, _ := tlb.ToCell(msg.Message)
+
+	toSend := cell.BeginCell()
+	toSend.MustStoreUInt(0x588b3270, 32)
+	toSend.MustStoreRef(userIntentCell)
+	toSend.MustStoreSlice(msg.Signature, 512)
+	toCell := toSend.EndCell()
+
+	toSendExt := &tlb.ExternalMessage{
+		DstAddr: saAddr,
+		Body: toCell,
+	}
+
+	extCellOk, _ := tlb.ToCell(toSendExt)
+
+	cellBytes := extCellOk.ToBOCWithFlags(false)
+	cbString := hex.EncodeToString(cellBytes)
+	return cbString, nil
 }
 
 func SignMessage(msg *UserIntent, sk ed25519.PrivateKey) (*SignedMessage, error) {

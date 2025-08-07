@@ -198,21 +198,10 @@ func (c *Client) BuildDepositNativePayload(owner *address.Address, amount *tlb.C
 		Amount:          amount,
 		ReceiverAddress: owner,
 		Init:            init,
-		KeyInit:         nil,
+		KeyInit:         false,
 	}
 
-	if len(publicKeys) > 0 {
-		pks := smartaccount.UserPublicKeys{
-			Values: publicKeys,
-		}
-
-		dict, err := pks.ToDictionary()
-		if err != nil {
-			return nil, err
-		}
-
-		v.KeyInit = dict
-	}
+	
 
 	return tlb.ToCell(v)
 }
