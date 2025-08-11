@@ -21,12 +21,16 @@ func (msg *SignedMessage) Hash() (string, error) {
 
 func (msg *SignedMessage) Marshal(saAddr *address.Address) (string, error) {
 
-	userIntentCell, _ := tlb.ToCell(msg.Message)
+	userIntentCell, err := tlb.ToCell(msg.Message)
+	if err != nil {
+		return "", err
+	}
 
 	toSend := cell.BeginCell()
 	toSend.MustStoreUInt(0x588b3270, 32)
 	toSend.MustStoreRef(userIntentCell)
 	toSend.MustStoreSlice(msg.Signature, 512)
+	toSend.MustStoreSlice(msg.Message.PublicKey, 256)
 	toCell := toSend.EndCell()
 
 	toSendExt := &tlb.ExternalMessage{
@@ -34,7 +38,10 @@ func (msg *SignedMessage) Marshal(saAddr *address.Address) (string, error) {
 		Body: toCell,
 	}
 
-	extCellOk, _ := tlb.ToCell(toSendExt)
+	extCellOk, err := tlb.ToCell(toSendExt)
+	if err != nil {
+    return "", err
+  }
 
 	cellBytes := extCellOk.ToBOCWithFlags(false)
 	cbString := hex.EncodeToString(cellBytes)
