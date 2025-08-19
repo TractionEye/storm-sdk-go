@@ -13,6 +13,7 @@ type DeployOrdinarySA struct {
 }
 
 type DepositNativePayload struct {
+	// _               tlb.Magic        `tlb:"#e0db7753" json:"_"`
 	_               tlb.Magic        `tlb:"#29bb3721" json:"_"`
 	QueryID         uint64           `tlb:"## 64" json:"query_id"`
 	Amount          *tlb.Coins       `tlb:"." json:"amount"`

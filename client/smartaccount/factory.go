@@ -72,7 +72,7 @@ func (f *Factory) DeploySmartAccount(ctx context.Context, mnemonic []string) (*t
 	if err != nil {
 		return nil, err
 	}
-	msg := wallet.SimpleMessage(f.Addr, tlb.MustFromTON("0.5"), payload)
+	msg := wallet.SimpleMessage(f.Addr, tlb.MustFromTON("0.85"), payload)
 	tx, _, err := walletInstance.SendWaitTransaction(context.Background(), msg)
 
 	return tx, err

@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	MinGas = tlb.MustFromTON("0.05")
+	MinGas = tlb.MustFromTON("1")
 )
 
 type Client struct {

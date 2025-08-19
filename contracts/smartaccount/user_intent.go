@@ -18,7 +18,6 @@ type PaymentRequest struct {
 type UserIntentPayload struct {
 	VAmm         *address.Address `tlb:"addr" json:"v_amm"`
 	SmartAccount *address.Address `tlb:"addr" json:"smart_account"`
-	Direction    uint             `tlb:"## 1" json:"direction"`
 	Order        *schemas.Order   `tlb:"^" json:"order"`
 }
 

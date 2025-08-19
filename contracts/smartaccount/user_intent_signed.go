@@ -19,7 +19,7 @@ func (msg *SignedMessage) Hash() (string, error) {
 	return msg.Message.Hash()
 }
 
-func (msg *SignedMessage) Marshal(saAddr *address.Address) (string, error) {
+func (msg *SignedMessage) Marshal(saAddr *address.Address, pkey []byte) (string, error) {
 
 	userIntentCell, _ := tlb.ToCell(msg.Message)
 
@@ -27,6 +27,7 @@ func (msg *SignedMessage) Marshal(saAddr *address.Address) (string, error) {
 	toSend.MustStoreUInt(0x588b3270, 32)
 	toSend.MustStoreRef(userIntentCell)
 	toSend.MustStoreSlice(msg.Signature, 512)
+	toSend.MustStoreSlice(pkey, 256)
 	toCell := toSend.EndCell()
 
 	toSendExt := &tlb.ExternalMessage{
