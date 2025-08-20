@@ -19,7 +19,7 @@ type DepositNativePayload struct {
 	Amount          *tlb.Coins       `tlb:"." json:"amount"`
 	ReceiverAddress *address.Address `tlb:"addr" json:"receiver_address"`
 	Init            bool             `tlb:"bool" json:"init"`
-	KeyInit         bool             `tlb:"bool" json:"key_init"`
+	KeyInit         *cell.Dictionary `tlb:"maybe dict 256" json:"key_init"`
 }
 
 type DepositJettonPayload struct {

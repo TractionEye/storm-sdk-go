@@ -2,20 +2,19 @@ package smartaccount
 
 import (
 	"context"
-	"github.com/pkg/errors"
+	"time"
+
 	"github.com/TractionEye/storm-sdk-go/contracts/smartaccount"
+	"github.com/pkg/errors"
 	"github.com/xssnick/tonutils-go/address"
 	"github.com/xssnick/tonutils-go/tlb"
 	"github.com/xssnick/tonutils-go/ton"
 	"github.com/xssnick/tonutils-go/ton/jetton"
 	"github.com/xssnick/tonutils-go/ton/wallet"
 	"github.com/xssnick/tonutils-go/tvm/cell"
-	"time"
 )
 
-var (
-	MinGas = tlb.MustFromTON("1")
-)
+var MinGas = tlb.MustFromTON("1")
 
 type Client struct {
 	addr *address.Address
@@ -198,10 +197,20 @@ func (c *Client) BuildDepositNativePayload(owner *address.Address, amount *tlb.C
 		Amount:          amount,
 		ReceiverAddress: owner,
 		Init:            init,
-		KeyInit:         false,
+		KeyInit:         nil,
 	}
+	if len(publicKeys) > 0 {
+		pks := smartaccount.UserPublicKeys{
+			Values: publicKeys,
+		}
 
-	
+		dict, err := pks.ToDictionary()
+		if err != nil {
+			return nil, err
+		}
+
+		v.KeyInit = dict
+	}
 
 	return tlb.ToCell(v)
 }
