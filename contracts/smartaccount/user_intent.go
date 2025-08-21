@@ -30,6 +30,14 @@ type UserIntent struct {
 	Intent           *UserIntentPayload `tlb:"^"`
 }
 
+type CancelMessage struct {
+ SmartAccountAddress *address.Address `tlb:"addr" json:"smart_account_address"`
+ OrderId             []byte           `tlb:"bits 256" json:"order_id"`
+}
+
+
+
+
 func (msg *UserIntent) Hash() (string, error) {
 	msgCell, err := tlb.ToCell(msg)
 	if err != nil {
